@@ -1,3 +1,4 @@
+import './config.js';
 import express from 'express';
 import { getJiraIssue, isValidIssueKey, testJiraConnection } from './jira.js';
 import { generateWithModel, listModels } from './ai.js';
