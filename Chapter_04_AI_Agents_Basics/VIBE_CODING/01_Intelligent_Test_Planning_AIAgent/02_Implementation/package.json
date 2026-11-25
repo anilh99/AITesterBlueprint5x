@@ -1,0 +1,13 @@
+{
+  "name": "jira-test-plan-generator",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix src/frontend run build",
+    "start": "node src/backend/server.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}
