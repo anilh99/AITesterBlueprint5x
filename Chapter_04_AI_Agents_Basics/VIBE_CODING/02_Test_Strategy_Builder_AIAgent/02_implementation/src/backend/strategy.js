@@ -4,6 +4,8 @@ const axios = require('axios');
 const config = require('./config');
 
 function readTemplate() {
+  const bundledTemplate = path.join(__dirname, 'test-strategy-template.md');
+  if (fs.existsSync(bundledTemplate)) return fs.readFileSync(bundledTemplate, 'utf8');
   const templatePath = path.resolve(__dirname, '../../../01_plan/test-strategy-template.md');
   return fs.readFileSync(templatePath, 'utf8');
 }
@@ -18,6 +20,7 @@ function fallbackStrategy(issue) {
 
 async function generate(issue) {
   const template = readTemplate();
+  if (process.env.VERCEL) return fallbackStrategy(issue);
   if (!config.groqApiKey) return fallbackStrategy(issue);
 
   const prompt = `You are a senior QA test architect.
