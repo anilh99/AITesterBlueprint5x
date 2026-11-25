@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import vercelApp from '../../server.js';
+import vercelApp from '../../api/[...route].js';
 import { getPublicSettings } from '../app.js';
 import { testPlanTemplate } from '../template.js';
 import { getJiraIssue, isValidIssueKey, richTextToPlainText, testJiraConnection } from '../jira.js';

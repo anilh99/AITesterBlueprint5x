@@ -39,11 +39,11 @@ The Settings screen can test Jira and either the local Ollama connection or Groq
 
 ## Deploy to Vercel
 
-The project is configured for Vercel's Express deployment. The Express app exports from `src/server.js`; Vite builds static files into `public/`.
+The Vercel project root is `src/`. Its `api/[...route].js` function exports the Express app, and Vite builds static files into `src/public/`.
 
 1. Push this project to a Git repository without `.env`.
-2. Import it in Vercel and set **Root Directory** to `Chapter_04_AI_Agents_Basics/VIBE_CODING/01_Intelligent_Test_Planning_AIAgent/02_Implementation`.
-3. Keep the build command as `npm run build` and output directory as `public` (also defined in `vercel.json`).
+2. Import it in Vercel and set **Root Directory** to `Chapter_04_AI_Agents_Basics/VIBE_CODING/01_Intelligent_Test_Planning_AIAgent/02_Implementation/src`.
+3. Keep the build command as `npm run build` and output directory as `public` (defined in `src/vercel.json`).
 4. In Vercel **Project Settings → Environment Variables**, set `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `AI_PROVIDER`, and provider settings: `GROQ_API_KEY` + `GROQ_MODEL`, or `OLLAMA_BASE_URL` + `OLLAMA_MODEL`. Optionally set `JIRA_API_VERSION` (`3` by default).
 5. Redeploy after setting environment variables.
 
