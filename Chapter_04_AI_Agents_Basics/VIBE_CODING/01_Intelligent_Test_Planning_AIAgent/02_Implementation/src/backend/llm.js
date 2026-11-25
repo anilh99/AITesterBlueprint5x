@@ -2,8 +2,8 @@ const axios = require('axios');
 const { getConfig } = require('./config');
 
 // Connectivity check only; the active provider is stored for test plan generation
-async function testLLM() {
-  const { llmProvider, ollamaUrl, groqApiKey } = getConfig();
+async function testLLM(overrides) {
+  const { llmProvider, ollamaUrl, groqApiKey } = getConfig(overrides);
   try {
     if (llmProvider === 'ollama') {
       const { data } = await axios.get(`${ollamaUrl}/api/tags`, { timeout: 8000 });

@@ -21,31 +21,22 @@ function loadEnvFile() {
 }
 
 const env = { ...loadEnvFile(), ...process.env };
-const SETTINGS_FILE = path.join(__dirname, 'settings.local.json');
-
-function readSettings() {
-  try {
-    return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
-  } catch {
-    return {};
-  }
-}
-
-// Settings saved from the UI (server-side file) override .env values
-function getConfig() {
-  const s = readSettings();
+// Serverless deployments do not have persistent writable files.
+// Per-request settings override environment variables and are never stored by the server.
+function getConfig(overrides = {}) {
+  const s = overrides && typeof overrides === 'object' ? overrides : {};
   return {
-    jiraEmail: s.jiraEmail ?? env.JIRA_EMAIL ?? '',
-    jiraToken: s.jiraToken ?? env.JIRA_TOKEN ?? '',
-    jiraUrl: (s.jiraUrl ?? env.JIRA_BASE_URL ?? env.JIRA_URL ?? '').replace(/\/+$/, ''),
-    llmProvider: s.llmProvider || 'groq',
-    ollamaUrl: (s.ollamaUrl ?? 'http://localhost:11434').replace(/\/+$/, ''),
-    groqApiKey: s.groqApiKey ?? env.GROQ_API_KEY ?? '',
+    jiraEmail: s.jiraEmail || env.JIRA_EMAIL || '',
+    jiraToken: s.jiraToken || env.JIRA_TOKEN || '',
+    jiraUrl: (s.jiraUrl || env.JIRA_BASE_URL || env.JIRA_URL || '').replace(/\/+$/, ''),
+    llmProvider: s.llmProvider || env.LLM_PROVIDER || 'groq',
+    ollamaUrl: (s.ollamaUrl || env.OLLAMA_URL || 'http://localhost:11434').replace(/\/+$/, ''),
+    groqApiKey: s.groqApiKey || env.GROQ_API_KEY || '',
   };
 }
 
 function saveSettings(updates) {
-  fs.writeFileSync(SETTINGS_FILE, JSON.stringify({ ...readSettings(), ...updates }, null, 2));
+  return getConfig(updates);
 }
 
 module.exports = { getConfig, saveSettings, port: env.PORT || 3000 };

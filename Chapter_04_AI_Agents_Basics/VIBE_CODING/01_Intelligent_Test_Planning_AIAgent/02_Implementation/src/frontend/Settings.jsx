@@ -22,9 +22,10 @@ export default function Settings() {
   async function run(name, test) {
     setBusy(name);
     try {
-      await saveSettings({ ...form, ...secrets });
+      const settings = { ...form, ...secrets };
+      await saveSettings(settings);
       setSecrets({ jiraToken: '', groqApiKey: '' });
-      const result = await test();
+      const result = await test(settings);
       setResults((r) => ({ ...r, [name]: result }));
       setForm(await getSettings());
     } catch (e) {

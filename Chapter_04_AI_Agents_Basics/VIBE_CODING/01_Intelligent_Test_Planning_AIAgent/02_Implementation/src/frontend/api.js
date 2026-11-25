@@ -4,7 +4,7 @@ export async function generateTestPlan(issueId) {
   const response = await fetch(`${API_BASE_URL}/api/generate-plan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ issueId }),
+    body: JSON.stringify({ issueId, ...getStoredSettings() }),
   });
 
   if (!response.ok) {
@@ -26,6 +26,17 @@ async function request(url, method, body) {
 }
 
 export const getSettings = () => request('/api/settings', 'GET');
-export const saveSettings = (settings) => request('/api/settings', 'PUT', settings);
-export const testJira = () => request('/api/settings/test-jira', 'POST');
-export const testLLM = () => request('/api/settings/test-llm', 'POST');
+export function getStoredSettings() {
+  try {
+    return JSON.parse(localStorage.getItem('jiraTestPlanSettings') || '{}');
+  } catch {
+    return {};
+  }
+}
+
+export const saveSettings = (settings) => {
+  localStorage.setItem('jiraTestPlanSettings', JSON.stringify(settings));
+  return Promise.resolve({ success: true });
+};
+export const testJira = (settings) => request('/api/settings/test-jira', 'POST', settings);
+export const testLLM = (settings) => request('/api/settings/test-llm', 'POST', settings);

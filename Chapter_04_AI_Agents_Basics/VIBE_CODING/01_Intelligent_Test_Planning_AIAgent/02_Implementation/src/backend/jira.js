@@ -1,8 +1,8 @@
 const axios = require('axios');
 const { getConfig } = require('./config');
 
-function client() {
-  const { jiraEmail, jiraToken, jiraUrl } = getConfig();
+function client(overrides) {
+  const { jiraEmail, jiraToken, jiraUrl } = getConfig(overrides);
   if (!jiraEmail || !jiraToken || !jiraUrl) {
     throw new Error('Jira credentials not configured. Open Settings to add them.');
   }
@@ -23,8 +23,8 @@ function explain(error) {
   return error.message;
 }
 
-async function getIssue(issueKey) {
-  const { jiraUrl, headers } = client();
+async function getIssue(issueKey, overrides) {
+  const { jiraUrl, headers } = client(overrides);
   try {
     const { data } = await axios.get(
       `${jiraUrl}/rest/api/3/issue/${encodeURIComponent(issueKey.trim())}`,
@@ -43,8 +43,8 @@ async function getIssue(issueKey) {
   }
 }
 
-async function testConnection() {
-  const { jiraUrl, headers } = client();
+async function testConnection(overrides) {
+  const { jiraUrl, headers } = client(overrides);
   try {
     const { data } = await axios.get(`${jiraUrl}/rest/api/3/myself`, { headers, timeout: 15000 });
     return `Connected to Jira as ${data.displayName || data.emailAddress}`;

@@ -23,21 +23,12 @@ app.get('/api/settings', (req, res) => {
 });
 
 app.put('/api/settings', (req, res) => {
-  const { jiraUrl, jiraEmail, jiraToken, llmProvider, ollamaUrl, groqApiKey } = req.body || {};
-  const updates = {};
-  if (typeof jiraUrl === 'string') updates.jiraUrl = jiraUrl.trim();
-  if (typeof jiraEmail === 'string') updates.jiraEmail = jiraEmail.trim();
-  if (jiraToken) updates.jiraToken = jiraToken.trim();
-  if (['ollama', 'groq'].includes(llmProvider)) updates.llmProvider = llmProvider;
-  if (typeof ollamaUrl === 'string') updates.ollamaUrl = ollamaUrl.trim();
-  if (groqApiKey) updates.groqApiKey = groqApiKey.trim();
-  saveSettings(updates);
   res.json({ success: true });
 });
 
 const testRoute = (fn) => async (req, res) => {
   try {
-    res.json({ ok: true, message: await fn() });
+    res.json({ ok: true, message: await fn(req.body || {}) });
   } catch (error) {
     res.json({ ok: false, message: error.message });
   }
@@ -53,7 +44,7 @@ app.post('/api/generate-plan', async (req, res) => {
       return res.status(400).json({ error: 'Invalid issue ID' });
     }
 
-    const issue = await getIssue(issueId);
+    const issue = await getIssue(issueId, req.body);
     const testPlan = generateTestPlan(issue);
     
     res.json({
