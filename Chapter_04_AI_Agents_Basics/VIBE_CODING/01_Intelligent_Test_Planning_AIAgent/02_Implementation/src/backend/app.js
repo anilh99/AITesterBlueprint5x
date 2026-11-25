@@ -1,8 +1,7 @@
 import express from 'express';
-import fs from 'node:fs/promises';
-import { templatePath } from './config.js';
 import { getJiraIssue, isValidIssueKey, testJiraConnection } from './jira.js';
 import { generateWithModel, listModels } from './ai.js';
+import { testPlanTemplate } from './template.js';
 
 const app = express();
 const settings = {
@@ -97,11 +96,8 @@ app.post('/api/plan', async (request, response) => {
   const issueKey = typeof request.body?.issueKey === 'string' ? request.body.issueKey.trim().toUpperCase() : '';
   if (!isValidIssueKey(issueKey)) return response.status(400).json({ error: 'Enter a Jira issue key in the form PROJECT-123.' });
   try {
-    const [issue, template] = await Promise.all([
-      getJiraIssue(settings, issueKey),
-      fs.readFile(templatePath, 'utf8'),
-    ]);
-    const plan = await generateWithModel(settings, issue, template);
+    const issue = await getJiraIssue(settings, issueKey);
+    const plan = await generateWithModel(settings, issue, testPlanTemplate);
     response.json({ issue: { key: issue.key, summary: issue.summary }, plan });
   } catch (error) {
     const message = error.message || 'Test plan generation failed.';

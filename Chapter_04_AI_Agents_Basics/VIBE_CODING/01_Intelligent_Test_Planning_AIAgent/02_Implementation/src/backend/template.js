@@ -1,4 +1,4 @@
-# Test Plan — <JIRA-KEY>: <title>
+export const testPlanTemplate = `# Test Plan — <JIRA-KEY>: <title>
 
 > Status: **DRAFT — pending human review.** Not approved until a QA owner signs off.
 
@@ -40,3 +40,4 @@
 - **I could not confirm:** …
 - **Open questions blocking sign-off:** …
 - **Approve, or edit, before I write test cases / automation.**
+`;

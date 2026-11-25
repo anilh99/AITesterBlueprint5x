@@ -47,7 +47,7 @@ The project is configured for Vercel's Express deployment. The Express app expor
 4. In Vercel **Project Settings → Environment Variables**, set `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `AI_PROVIDER`, and provider settings: `GROQ_API_KEY` + `GROQ_MODEL`, or `OLLAMA_BASE_URL` + `OLLAMA_MODEL`. Optionally set `JIRA_API_VERSION` (`3` by default).
 5. Redeploy after setting environment variables.
 
-Vercel does not read the repository's local `.env`. Settings are read-only in Vercel; set them in Project Settings and redeploy. A local Ollama instance at `localhost` is not reachable from Vercel; use a hosted Ollama endpoint or Groq. The Express function has a 60-second maximum duration, and AI requests have a 35-second timeout.
+Vercel does not read the repository's local `.env`. Settings are read-only in Vercel; set them in Project Settings and redeploy. A local Ollama instance at `localhost` is not reachable from Vercel; use a hosted Ollama endpoint or Groq. AI requests time out after 35 seconds; the effective function duration limit depends on the Vercel plan and project settings.
 
 ## Use
 
