@@ -1,20 +1,11 @@
 import { useEffect, useState } from 'react';
+import { requestJson } from './api.js';
 
 const EMPTY_SETTINGS = {
   editable: true,
   jira: { baseUrl: '', email: '', tokenConfigured: false },
   ai: { provider: '', model: '', configured: false },
 };
-
-async function requestJson(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
-  return result;
-}
 
 function App() {
   const [page, setPage] = useState('plan');
