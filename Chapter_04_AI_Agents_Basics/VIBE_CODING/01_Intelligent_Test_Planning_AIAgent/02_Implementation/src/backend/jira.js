@@ -56,7 +56,7 @@ async function jiraFetch(settings, path, options = {}) {
     response = await fetch(url, {
       ...options,
       headers: { Authorization: `Basic ${auth}`, Accept: 'application/json', ...options.headers },
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(8000),
     });
   } catch (error) {
     if (error.name === 'TimeoutError' || error.name === 'AbortError') throw new Error('Jira did not respond in time.');

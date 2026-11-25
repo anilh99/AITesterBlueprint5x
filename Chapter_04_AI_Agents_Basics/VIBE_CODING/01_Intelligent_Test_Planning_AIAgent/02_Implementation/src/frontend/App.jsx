@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const EMPTY_SETTINGS = {
+  editable: true,
   jira: { baseUrl: '', email: '', tokenConfigured: false },
   ai: { provider: '', model: '', configured: false },
 };
@@ -90,10 +91,12 @@ function App() {
     setSettingsMessage('');
     setSettingsError('');
     try {
-      await requestJson('/api/settings', {
-        method: 'PUT',
-        body: JSON.stringify({ jira: jiraForm }),
-      });
+      if (settings.editable) {
+        await requestJson('/api/settings', {
+          method: 'PUT',
+          body: JSON.stringify({ jira: jiraForm }),
+        });
+      }
       const result = await requestJson('/api/jira/test', { method: 'POST', body: '{}' });
       setSettings(result.settings);
       setJiraForm((current) => ({ ...current, token: '' }));
@@ -111,9 +114,10 @@ function App() {
     setSettingsError('');
     setModels([]);
     try {
+      const activeProvider = settings.editable ? provider : settings.ai.provider;
       const result = await requestJson('/api/ai/models', {
         method: 'POST',
-        body: JSON.stringify({ provider, apiKey }),
+        body: JSON.stringify({ provider: activeProvider, apiKey: settings.editable ? apiKey : '' }),
       });
       setModels(result.models);
       setModel((current) => result.models.includes(current) ? current : (result.models[0] || ''));
@@ -216,30 +220,31 @@ function App() {
             <section className="card settings-card">
               <div className="section-title"><div className="icon-tile blue">◈</div><div><h2>Jira connection</h2><p>{settings.jira.configured ? 'Server-side Jira credentials are configured.' : 'Read access to issues in your workspace.'}</p></div></div>
               <form onSubmit={saveJira} className="settings-form">
-                <label htmlFor="jira-url">Jira URL</label><input id="jira-url" type="url" placeholder="https://your-team.atlassian.net" value={jiraForm.baseUrl} onChange={(e) => setJiraForm({...jiraForm,baseUrl:e.target.value})} />
-                <label htmlFor="jira-email">Email</label><input id="jira-email" type="email" placeholder="you@company.com" value={jiraForm.email} onChange={(e) => setJiraForm({...jiraForm,email:e.target.value})} />
-                <label htmlFor="jira-token">API token</label><input id="jira-token" type="password" autoComplete="new-password" placeholder={settings.jira.tokenConfigured ? 'Configured on backend · leave blank to keep' : 'Enter Jira API token'} value={jiraForm.token} onChange={(e) => setJiraForm({...jiraForm,token:e.target.value})} />
-                <div className="button-row"><button type="submit" className="secondary-button" disabled={settingsBusy}>Save settings</button><button type="button" className="primary-button" onClick={testJira} disabled={settingsBusy}>Test connection <span>→</span></button></div>
+                <label htmlFor="jira-url">Jira URL</label><input id="jira-url" type="url" disabled={!settings.editable} placeholder="https://your-team.atlassian.net" value={jiraForm.baseUrl} onChange={(e) => setJiraForm({...jiraForm,baseUrl:e.target.value})} />
+                <label htmlFor="jira-email">Email</label><input id="jira-email" type="email" disabled={!settings.editable} placeholder="you@company.com" value={jiraForm.email} onChange={(e) => setJiraForm({...jiraForm,email:e.target.value})} />
+                <label htmlFor="jira-token">API token</label><input id="jira-token" type="password" disabled={!settings.editable} autoComplete="new-password" placeholder={settings.jira.tokenConfigured ? 'Configured on backend' : 'Set JIRA_API_TOKEN in environment'} value={jiraForm.token} onChange={(e) => setJiraForm({...jiraForm,token:e.target.value})} />
+                <div className="button-row"><button type="submit" className="secondary-button" disabled={settingsBusy || !settings.editable}>Save settings</button><button type="button" className="primary-button" onClick={testJira} disabled={settingsBusy}>Test connection <span>→</span></button></div>
               </form>
-              <p className="helper-text">Credentials are held in backend memory only and clear when the server restarts.</p>
+              <p className="helper-text">{settings.editable ? 'Credentials are held in backend memory only and clear when the server restarts.' : 'For Vercel, configure Jira credentials in Project Settings → Environment Variables, then redeploy.'}</p>
             </section>
 
             <section className="card settings-card">
               <div className="section-title"><div className="icon-tile lavender">✳</div><div><h2>Language model</h2><p>{settings.ai.configured ? `${settings.ai.provider} model is configured.` : 'Choose the provider for test plan drafts.'}</p></div></div>
               <div className="provider-list">
-                <label className={`provider-option ${provider === 'ollama' ? 'selected' : ''}`}><input type="radio" name="provider" value="ollama" checked={provider === 'ollama'} onChange={() => {setProvider('ollama');setModels([]);setModel('');}} /><span className="provider-icon ollama-icon">◉</span><span><strong>Ollama</strong><small>Local connection</small></span><span className="radio-mark" /></label>
-                <label className={`provider-option ${provider === 'groq' ? 'selected' : ''}`}><input type="radio" name="provider" value="groq" checked={provider === 'groq'} onChange={() => {setProvider('groq');setModels([]);setModel('');}} /><span className="provider-icon groq-icon">ϟ</span><span><strong>Groq</strong><small>Cloud API</small></span><span className="radio-mark" /></label>
+                <label className={`provider-option ${provider === 'ollama' ? 'selected' : ''}`}><input type="radio" name="provider" value="ollama" disabled={!settings.editable} checked={provider === 'ollama'} onChange={() => {setProvider('ollama');setModels([]);setModel('');}} /><span className="provider-icon ollama-icon">◉</span><span><strong>Ollama</strong><small>Local connection</small></span><span className="radio-mark" /></label>
+                <label className={`provider-option ${provider === 'groq' ? 'selected' : ''}`}><input type="radio" name="provider" value="groq" disabled={!settings.editable} checked={provider === 'groq'} onChange={() => {setProvider('groq');setModels([]);setModel('');}} /><span className="provider-icon groq-icon">ϟ</span><span><strong>Groq</strong><small>Cloud API</small></span><span className="radio-mark" /></label>
               </div>
-              {provider === 'groq' && <div className="provider-secret"><label htmlFor="groq-key">Groq API key</label><input id="groq-key" type="password" autoComplete="new-password" placeholder="Enter Groq API key" value={apiKey} onChange={(e) => setApiKey(e.target.value)} /></div>}
+              {provider === 'groq' && <div className="provider-secret"><label htmlFor="groq-key">Groq API key</label><input id="groq-key" type="password" disabled={!settings.editable} autoComplete="new-password" placeholder={settings.editable ? 'Enter Groq API key' : 'Set GROQ_API_KEY in environment'} value={apiKey} onChange={(e) => setApiKey(e.target.value)} /></div>}
               <div className="model-row">
                 <label htmlFor="model-select">Model</label>
-                <select id="model-select" value={model} onChange={(e) => setModel(e.target.value)} disabled={!models.length}>
+                <select id="model-select" value={model} onChange={(e) => setModel(e.target.value)} disabled={!settings.editable || !models.length}>
                   <option value="">{models.length ? 'Select an available model' : 'Test connection to load models'}</option>
                   {models.map((item) => <option key={item} value={item}>{item}</option>)}
                 </select>
               </div>
-              <div className="button-row ai-buttons"><button className="secondary-button" onClick={testProvider} disabled={settingsBusy || !provider}>Test {provider === 'groq' ? 'Groq' : 'local LLM'}</button><button className="primary-button" onClick={saveAi} disabled={settingsBusy || !provider}>Save model <span>→</span></button></div>
-              {provider === 'ollama' && <p className="helper-text">Set <code>OLLAMA_BASE_URL</code> in the repository `.env` file.</p>}
+              <div className="button-row ai-buttons"><button className="secondary-button" onClick={testProvider} disabled={settingsBusy || !(settings.editable ? provider : settings.ai.provider)}>Test {provider === 'groq' ? 'Groq' : 'local LLM'}</button><button className="primary-button" onClick={saveAi} disabled={settingsBusy || !provider || !settings.editable}>Save model <span>→</span></button></div>
+              {!settings.editable && <p className="helper-text">Vercel settings are read-only here. Configure the AI provider and model in Project Settings → Environment Variables, then redeploy.</p>}
+              {provider === 'ollama' && <p className="helper-text">Set <code>OLLAMA_BASE_URL</code> to a server reachable from Vercel (not localhost).</p>}
             </section>
           </div>
           {settingsMessage && <div className="message success-message" role="status">{settingsMessage}</div>}

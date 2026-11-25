@@ -86,7 +86,7 @@ export async function generateWithModel(settings, issue, template) {
 
   let response;
   try {
-    response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(90000) });
+    response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(35000) });
   } catch (error) {
     if (error.name === 'TimeoutError' || error.name === 'AbortError') throw new Error('The AI provider did not respond in time.');
     throw new Error('Could not reach the configured AI provider.');

@@ -1,7 +1,63 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import { createServer } from 'node:http';
+import vercelApp from '../../server.js';
+import { getPublicSettings } from '../app.js';
+import { templatePath } from '../config.js';
 import { getJiraIssue, isValidIssueKey, richTextToPlainText, testJiraConnection } from '../jira.js';
 import { generateWithModel, listModels } from '../ai.js';
+
+test('exports the Express app from the Vercel entry point without opening a server', () => {
+  assert.equal(typeof vercelApp, 'function');
+  assert.equal(typeof vercelApp.listen, 'function');
+});
+
+test('marks deployment settings read-only on Vercel', () => {
+  const previous = process.env.VERCEL;
+  process.env.VERCEL = '1';
+  try {
+    assert.equal(getPublicSettings().editable, false);
+  } finally {
+    if (previous === undefined) delete process.env.VERCEL;
+    else process.env.VERCEL = previous;
+  }
+});
+
+test('serves the health route and rejects persistent settings in Vercel mode', async () => {
+  const previous = process.env.VERCEL;
+  process.env.VERCEL = '1';
+  const server = createServer(vercelApp);
+  try {
+    await new Promise((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    const port = server.address().port;
+    const health = await fetch(`http://127.0.0.1:${port}/api/health`);
+    assert.equal(health.status, 200);
+    assert.deepEqual(await health.json(), { status: 'ok' });
+
+    const update = await fetch(`http://127.0.0.1:${port}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jira: {} }),
+    });
+    assert.equal(update.status, 409);
+    assert.match((await update.json()).error, /project environment variables/);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+    if (previous === undefined) delete process.env.VERCEL;
+    else process.env.VERCEL = previous;
+  }
+});
+
+test('includes the supplied test-plan template for serverless deployments', async () => {
+  const template = await fs.readFile(templatePath, 'utf8');
+  for (const section of ['## 1. Scope & Objectives', '## 2. Gaps & Questions for the author', '## 3. Test Scenarios', '## 8. Timelines, Sprint Details', '## HUMAN REVIEW GATE']) {
+    assert.ok(template.includes(section), `Missing template section: ${section}`);
+  }
+});
 
 test('accepts a Jira project key and positive issue number', () => {
   assert.equal(isValidIssueKey('QA-123'), true);
