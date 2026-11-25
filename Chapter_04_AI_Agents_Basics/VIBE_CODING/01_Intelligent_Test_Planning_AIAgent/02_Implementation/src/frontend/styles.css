@@ -172,6 +172,10 @@ nav button.active {
   color: #0052cc;
 }
 
+.card p {
+  margin: 0.25rem 0;
+}
+
 .card label {
   display: flex;
   flex-direction: column;
