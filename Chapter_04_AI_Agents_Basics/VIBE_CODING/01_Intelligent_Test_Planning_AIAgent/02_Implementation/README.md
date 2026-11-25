@@ -1,58 +1,90 @@
-# Jira Test Plan Agent
+# Jira Test Plan Generator
 
-Small React + Express app that reads a Jira issue and drafts a test plan using the supplied template.
+A lightweight React application that retrieves Jira issues and generates structured test plans.
 
-## Run
+## Quick Start
 
-Requires Node.js 20+. From this directory:
+### Prerequisites
+- Node.js (v16+)
+- npm
+- A `.env` file (any parent folder, git-ignored) **or** the in-app Settings page
 
-```powershell
+### Setup
+
+1. **Configure credentials** – either use the **Settings** page in the app, or add a `.env` file:
+```
+JIRA_BASE_URL=https://your-domain.atlassian.net
+JIRA_EMAIL=your-email@example.com
+JIRA_TOKEN=your-api-token
+GROQ_API_KEY=your-groq-key
+```
+Values saved in Settings are stored server-side in `src/backend/settings.local.json` (git-ignored) and override `.env`. Secrets are never returned to the browser.
+
+2. **Install backend dependencies**:
+```bash
+cd src
 npm install
-npm run dev:backend
 ```
 
-In another terminal:
-
-```powershell
-npm run dev:frontend
+3. **Install frontend dependencies**:
+```bash
+cd src/frontend
+npm install
 ```
 
-Open `http://localhost:5173`. Run backend tests with `npm test` and create a production frontend build with `npm run build`.
+### Run
 
-## Configuration
-
-The backend reads the repository-root `.env` file; credential values are not returned to the browser or logged. `config.md` was not present, so set or update values using environment variables:
-
-```dotenv
-JIRA_BASE_URL=https://your-company.atlassian.net
-JIRA_EMAIL=your-jira-email
-JIRA_API_TOKEN=your-jira-api-token
-JIRA_API_VERSION=3
-AI_PROVIDER=groq
-GROQ_API_KEY=your-groq-api-key
-GROQ_MODEL=your-enabled-model
+**Terminal 1 - Backend (port 3000)**:
+```bash
+cd src
+npm start
 ```
 
-For Ollama, set `AI_PROVIDER=ollama`, `OLLAMA_BASE_URL` and `OLLAMA_MODEL`. Do not commit credentials. Jira API version defaults to `3`; set it to `2` for a deployment that uses that API.
+**Terminal 2 - Frontend (port 5173)**:
+```bash
+cd src/frontend
+npm run dev
+```
 
-The Settings screen can test Jira and either the local Ollama connection or Groq API. Credentials entered there are held only in backend process memory and are cleared when the backend restarts. A model must be configured on the backend (`GROQ_MODEL` or `OLLAMA_MODEL`) for plan generation.
+**Open browser**:
+```
+http://localhost:5173
+```
 
-## Deploy to Vercel
+## Usage
 
-The Vercel project root is `src/`. Its `api/[...route].js` function exports the Express app, and Vite builds static files into `src/public/`.
+1. Enter a Jira issue ID (e.g., `QA-123`)
+2. Click "Generate Plan"
+3. The backend retrieves the issue from Jira
+4. A test plan is generated based on the issue details
+5. Copy the plan or use it as a template
 
-1. Push this project to a Git repository without `.env`.
-2. Import it in Vercel and set **Root Directory** to `Chapter_04_AI_Agents_Basics/VIBE_CODING/01_Intelligent_Test_Planning_AIAgent/02_Implementation/src`.
-3. Keep the build command as `npm run build` and output directory as `public` (defined in `src/vercel.json`).
-4. In Vercel **Project Settings → Environment Variables**, set `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `AI_PROVIDER`, and provider settings: `GROQ_API_KEY` + `GROQ_MODEL`, or `OLLAMA_BASE_URL` + `OLLAMA_MODEL`. Optionally set `JIRA_API_VERSION` (`3` by default).
-5. Redeploy after setting environment variables.
+## Architecture
 
-Vercel does not read the repository's local `.env`. Settings are read-only in Vercel; set them in Project Settings and redeploy. A local Ollama instance at `localhost` is not reachable from Vercel; use a hosted Ollama endpoint or Groq. AI requests time out after 35 seconds; the effective function duration limit depends on the Vercel plan and project settings.
+- **Backend**: Express.js (Node.js)
+  - `server.js` - API endpoints
+  - `jira.js` - Jira integration
+  - `template.js` - Test plan generation
+  - `config.js` - Loads `.env` and saved settings
+  - `llm.js` - LLM connection test (Ollama / Groq)
 
-## Use
+- **Frontend**: React + Vite
+  - `App.jsx` - Main page and navigation
+  - `Settings.jsx` - Settings page (Jira connection, LLM configuration)
+  - `api.js` - API client
+  - `styles.css` - Styling
 
-Enter an issue key such as `QA-123` and select **Generate test plan**. The app retrieves the issue read-only, extracts its description, acceptance criteria and relevant metadata, then requests a draft from the configured model. The exact supplied template sections are retained. The plan is marked as a draft for human review.
+## Features
 
-## Verification and limits
+- Simple Jira issue lookup
+- Automatic test plan generation
+- Loading and error states
+- Copy to clipboard functionality
+- Clean, minimal UI
 
-`npm test` checks issue-key validation, Jira description extraction, and mocked Jira/AI integration; `npm run build` checks frontend compilation. Live Jira and AI calls require valid authorized configuration and were not claimed as verified. Jira content is treated as source data, not instructions. Missing details are marked **Insufficient information to determine.** Model output can vary despite a zero-temperature request; review before use.
+## Notes
+
+- Credentials are stored on the backend only
+- Frontend makes proxied requests through Vite dev server
+- Test plans use template structure with "Insufficient information to determine" for missing details
+- No data is persisted or logged beyond request handling

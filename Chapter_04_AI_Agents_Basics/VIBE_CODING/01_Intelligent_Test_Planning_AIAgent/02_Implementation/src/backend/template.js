@@ -1,43 +1,65 @@
-export const testPlanTemplate = `# Test Plan — <JIRA-KEY>: <title>
+function generateTestPlan(issue) {
+  return `# Test Plan for ${issue.key}
 
-> Status: **DRAFT — pending human review.** Not approved until a QA owner signs off.
+## Overview
+- **Jira Issue:** ${issue.key}
+- **Title:** ${issue.summary}
+- **Issue Type:** ${issue.issueType}
+- **Priority:** ${issue.priority}
 
-## 1. Scope & Objectives
-- **In scope:**
-- **Out of scope:**
-- **Objective:** what "tested" means for this ticket.
+## Objective
+Test the functionality described in ${issue.key}.
 
-## 2. Gaps & Questions for the author
-| # | Area | Finding (⚠️/❌) | Question to author |
-|---|------|----------------|--------------------|
-| 1 |      |                |                    |
+## Scope
 
-## 3. Test Scenarios
-| ID | Priority | Type (pos/neg/boundary) | Scenario | Maps to (AC / gap) |
-|----|----------|-------------------------|----------|--------------------|
-| TS-1 | P0 |                       |          |                    |
+### In Scope
+- Functional testing for the described feature.
+- Requirements extraction from: ${issue.key}
 
-## 4. Test Data & Environment
-- **Data:**
-- **Environment / flags:**
-- **Roles / permissions:**
+### Out of Scope
+- Performance testing
+- Security testing
+- Load testing
 
-## 5. Risks & Assumptions
-- **Assumptions made:**
-- **Risks:**
+## Test Scenarios
 
-## 6. Entry / Exit criteria
-- **Entry:**
-- **Exit:**
+### Scenario 1: Positive Test
+- **Preconditions:** Insufficient information to determine.
+- **Steps:** Based on ${issue.key}, verify the core functionality.
+- **Expected Result:** Feature works as described in ${issue.key}.
 
-## 7. Resource Allocation
+### Scenario 2: Error Handling
+- **Preconditions:** Insufficient information to determine.
+- **Steps:** Test boundary conditions and invalid input.
+- **Expected Result:** System handles errors gracefully.
 
-## 8. Timelines, Sprint Details
+## Test Environment
+Insufficient information to determine.
 
----
-## HUMAN REVIEW GATE
-- **I assumed:** …
-- **I could not confirm:** …
-- **Open questions blocking sign-off:** …
-- **Approve, or edit, before I write test cases / automation.**
+## Test Data
+Insufficient information to determine.
+
+## Entry and Exit Criteria
+
+### Entry Criteria
+- Insufficient information to determine.
+
+### Exit Criteria
+- All planned test scenarios are executed.
+- No critical defects remain.
+
+## Deliverables
+- Test execution results
+- Defect reports (if any)
+- Test closure summary
+
+## Risks
+- Requirements clarity: ${issue.description || 'Not provided'}
+- Environment availability: Insufficient information to determine.
+
+## Notes
+Generated from Jira issue ${issue.key}. Additional details and templates should be customized per project standards.
 `;
+}
+
+module.exports = { generateTestPlan };
