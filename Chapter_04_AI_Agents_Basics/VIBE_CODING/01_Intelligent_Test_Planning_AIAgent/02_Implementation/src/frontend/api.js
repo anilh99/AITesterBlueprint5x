@@ -1,5 +1,7 @@
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
 export async function generateTestPlan(issueId) {
-  const response = await fetch('/api/generate-plan', {
+  const response = await fetch(`${API_BASE_URL}/api/generate-plan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ issueId }),
@@ -14,7 +16,7 @@ export async function generateTestPlan(issueId) {
 }
 
 async function request(url, method, body) {
-  const response = await fetch(url, {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
