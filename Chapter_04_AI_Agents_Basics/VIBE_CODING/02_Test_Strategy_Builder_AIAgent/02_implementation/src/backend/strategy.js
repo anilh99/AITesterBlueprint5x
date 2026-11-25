@@ -42,7 +42,7 @@ ${template}`;
       },
       {
         headers: { Authorization: `Bearer ${config.groqApiKey}`, 'Content-Type': 'application/json' },
-        timeout: 30000
+        timeout: 15000
       }
     );
     return data.choices?.[0]?.message?.content || fallbackStrategy(issue);

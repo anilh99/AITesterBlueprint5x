@@ -11,7 +11,7 @@ function jiraClient() {
       Authorization: `Basic ${Buffer.from(`${config.jiraEmail}:${config.jiraToken}`).toString('base64')}`,
       Accept: 'application/json'
     },
-    timeout: 15000
+    timeout: 10000
   });
 }
 

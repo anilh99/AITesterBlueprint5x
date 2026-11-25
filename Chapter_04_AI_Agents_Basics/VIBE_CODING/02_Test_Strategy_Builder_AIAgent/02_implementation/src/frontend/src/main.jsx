@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
 function App() {
   const [page, setPage] = useState('main');
   return (
@@ -29,18 +31,24 @@ function MainPage() {
     setLoading(true);
     setError('');
     setResult(null);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
     try {
-      const response = await fetch('/api/strategy', {
+      const response = await fetch(`${API_BASE_URL}/api/strategy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jiraIssueId: issueId.trim() })
+        body: JSON.stringify({ jiraIssueId: issueId.trim() }),
+        signal: controller.signal
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Strategy generation failed.');
       setResult(data);
     } catch (e) {
-      setError(e.message);
+      setError(e.name === 'AbortError'
+        ? 'The request timed out. Please try again.'
+        : e.message);
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   }
@@ -84,12 +92,12 @@ function SettingsPage() {
   const [message, setMessage] = useState('');
 
   React.useEffect(() => {
-    fetch('/api/settings').then((r) => r.json()).then(setSettings).catch(() => setMessage('Could not load settings.'));
+    fetch(`${API_BASE_URL}/api/settings`).then((r) => r.json()).then(setSettings).catch(() => setMessage('Could not load settings.'));
   }, []);
 
   async function testJira() {
     setMessage('');
-    const response = await fetch('/api/settings/test-jira', { method: 'POST' });
+    const response = await fetch(`${API_BASE_URL}/api/settings/test-jira`, { method: 'POST' });
     const data = await response.json();
     setMessage(data.ok ? data.message : data.error || 'Jira connection failed.');
   }
