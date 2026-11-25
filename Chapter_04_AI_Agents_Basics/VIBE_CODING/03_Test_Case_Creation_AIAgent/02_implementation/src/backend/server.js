@@ -59,6 +59,10 @@ app.post('/api/test-cases/generate', async (req, res) => {
   }
 });
 
-app.listen(config.port, () => {
-  console.log(`Backend running at http://localhost:${config.port}`);
-});
+if (require.main === module) {
+  app.listen(config.port, () => {
+    console.log(`Backend running at http://localhost:${config.port}`);
+  });
+}
+
+module.exports = app;

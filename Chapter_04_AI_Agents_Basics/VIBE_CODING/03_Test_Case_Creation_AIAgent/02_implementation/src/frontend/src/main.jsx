@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
 function App() {
   const [page, setPage] = useState('main');
   return (
@@ -30,7 +32,7 @@ function MainPage() {
     setError('');
     setResult(null);
     try {
-      const response = await fetch('/api/test-cases/generate', {
+      const response = await fetch(`${API_BASE_URL}/api/test-cases/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jiraIssueId: issueId.trim() })
@@ -91,7 +93,7 @@ function SettingsPage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetch('/api/settings')
+    fetch(`${API_BASE_URL}/api/settings`)
       .then((response) => response.json())
       .then(setSettings)
       .catch(() => setMessage('Could not load settings.'));
@@ -99,7 +101,7 @@ function SettingsPage() {
 
   async function testJira() {
     setMessage('');
-    const response = await fetch('/api/jira/validate', { method: 'POST' });
+    const response = await fetch(`${API_BASE_URL}/api/jira/validate`, { method: 'POST' });
     const data = await response.json();
     setMessage(data.ok ? data.message : data.error || 'Jira connection failed.');
   }
